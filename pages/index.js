@@ -1,5 +1,6 @@
 import LoginButton from "../lib/components/LoginButton";
 import LogoutButton from "../lib/components/LogoutButton";
+import StopWatch from "../lib/components/StopWatch";
 
 import Head from "next/head";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -10,18 +11,35 @@ export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth0();
 
   const [punchMode, setPunchMode] = useState("none");
+  const [punchInTime, setPunchInTime] = useState(undefined);
+  const [punches, setPunches] = useState([]);
 
   // when a new user loads, make sure to get the user's current
   // punch status
   useEffect(() => {
-    async function fetchAndSetPunchMode() {
+    async function fetchAndSetPunchStatus() {
       if (!user) return;
       const status = await getPunchStatus(user);
-      setPunchMode(status);
+      setPunchMode(status.mode);
+      setPunchInTime(status.time);
     }
 
-    fetchAndSetPunchMode();
+    fetchAndSetPunchStatus();
   }, [user]);
+
+  useEffect(() => {
+    async function fetchAndSetPunches() {
+      if (!user) return;
+      const listPunchesResponse = await fetch(
+        `/api/punch/list?email=${user.email}`
+      );
+      const punches = await listPunchesResponse.json();
+
+      setPunches(punches);
+    }
+
+    fetchAndSetPunches();
+  }, [punchMode]);
 
   // helper function to get a user's punch status aka 'mode'
   async function getPunchStatus(user) {
@@ -30,7 +48,7 @@ export default function Home() {
     );
 
     if (punchStatusResponse.ok) {
-      return await punchStatusResponse.text();
+      return await punchStatusResponse.json();
     } else {
       toast("Server Error while getting punch status", { autoClose: false });
       return "none";
@@ -39,7 +57,9 @@ export default function Home() {
 
   // logs either a punch-in or punch-out based on the mode ('in' or 'out') passed
   async function logTime(userData, time, mode) {
-    const waitingMsg = toast("waiting for server...");
+    const waitingMsg = toast("waiting for server...", {
+      position: toast.POSITION.BOTTOM_CENTER,
+    });
     const punchResponse = await fetch("api/punch", {
       method: "POST",
       body: JSON.stringify({ user: userData, time, mode }),
@@ -48,8 +68,11 @@ export default function Home() {
     toast.dismiss(waitingMsg);
 
     if (punchResponse.ok) {
-      toast(`Successful Clock-${punchMode}. Good Job!`);
+      toast(`Successful Clock-${punchMode}. Good Job!`, {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
       setPunchMode(punchMode === "in" ? "out" : "in");
+      setPunchInTime(punchMode === "in" ? time : undefined);
     } else {
       toast("Seems like there was a server error. Try punching in again.", {
         autoClose: false,
@@ -88,6 +111,21 @@ export default function Home() {
                 PUNCH OUT!!!!!
               </button>
             )}
+
+            {punchInTime && (
+              <div className="inline-block mx-3">
+                <StopWatch since={punchInTime} />
+              </div>
+            )}
+
+            <div>
+              {punches.map((punch) => (
+                <div>
+                  <div className="inline-block w-[50px]">{punch.mode}</div>:{" "}
+                  {punch.time}
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div>

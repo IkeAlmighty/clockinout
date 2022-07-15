@@ -20,8 +20,11 @@ export default async function handler(req, res) {
   if (mongoLatestPunchesResponse.length > 0) {
     const latestPunch = mongoLatestPunchesResponse[0];
 
-    res.send(latestPunch.mode === "in" ? "out" : "in");
+    const mode = latestPunch.mode === "in" ? "out" : "in";
+    const time = mode === "out" ? latestPunch.time : undefined;
+
+    res.json({ mode, time });
   } else {
-    res.send("in"); // default to punch in if there are no punches recorded
+    res.json({ mode: "in" }); // default to punch in if there are no punches recorded
   }
 }
