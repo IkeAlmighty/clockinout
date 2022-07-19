@@ -8,7 +8,7 @@ My buddy recently asked me if I could create a simple clock in & clock out app f
 
 2. **The app was simple, so I finished the MVP quickly**. This means a lot. I have a tendency to burn myself out on personal projects, but Clock in/out was bite sized, unlike my Computer Assisted RPG app, which quickly became a form nightmare (side thought: I probably need to use a package for that).
 
-3. I made an app that was clearly useful to people. I think because of my history as both a board game designer and a barista, I crave creative process that results in concrete and functional experiences. A clock in/out app is going to be used by people, because there's a demand for it! That feels good.
+3. **I made an app that was clearly useful to people**. I think because of my history as both a board game designer and a barista, I crave creative process that results in concrete and functional experiences. A clock in/out app is going to be used by people, because there's a demand for it! That feels good.
 
 ## Tech Stack
 
