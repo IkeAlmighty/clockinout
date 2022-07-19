@@ -145,7 +145,10 @@ export default function Home() {
                   const elapsed = punch.time - punches[index + 1].time;
 
                   return (
-                    <div className="my-1">
+                    <div
+                      key={`${punch._id}_${punches[index + 1]._id}`}
+                      className="my-1"
+                    >
                       <div className="p-1 inline-block mx-1 w-[100px]">
                         {prettifyMs(elapsed)}
                       </div>
