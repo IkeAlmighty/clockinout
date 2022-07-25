@@ -144,29 +144,60 @@ export default function Home() {
                 if (punch.mode === "out" && index + 1 < punches.length) {
                   const elapsed = punch.time - punches[index + 1].time;
 
+                  const punchIn = punches[index + 1];
+                  const punchOut = punch;
+
+                  // helper component
+                  function PunchDataComponent({ datetime, mode }) {
+                    return (
+                      <div className="text-slate-600">
+                        <div className="inline-block px-1 w-[125px]">
+                          Punched {mode}:{" "}
+                        </div>
+                        <div className="inline-block px-1">
+                          {datetime.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                        <div className="inline-block px-1">
+                          {datetime.toLocaleDateString()}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
-                      key={`${punch._id}_${punches[index + 1]._id}`}
-                      className="my-1"
+                      key={`${punchOut._id}_${punchIn._id}`}
+                      className="my-10"
                     >
-                      <div className="p-1 inline-block mx-1 w-[100px]">
+                      <div className="pr-1 inline-block mx-1 w-[100px] text-xl">
                         {prettifyMs(elapsed)}
                       </div>
                       <div className="inline-block">
                         <input
-                          className="p-1 w-[200px]"
+                          className="mx-6 p-1"
                           type="text"
                           placeholder="label: not yet implemented!"
                         />
                       </div>
                       <div
-                        onClick={() =>
-                          removePunches(punch._id, punches[index + 1]._id)
-                        }
+                        onClick={() => removePunches(punchOut._id, punchIn._id)}
                         className="float-right cursor-pointer mx-2 inline-block text-red-500"
                       >
                         x
                       </div>
+
+                      <PunchDataComponent
+                        datetime={new Date(punchIn.time)}
+                        mode="in"
+                      />
+
+                      <PunchDataComponent
+                        datetime={new Date(punchOut.time)}
+                        mode="out"
+                      />
                     </div>
                   );
                 }
