@@ -7,7 +7,7 @@ import { prettifyMs } from "../lib/time";
 import Head from "next/head";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth0();
@@ -15,6 +15,12 @@ export default function Home() {
   const [punchMode, setPunchMode] = useState("none");
   const [punchInTime, setPunchInTime] = useState(undefined);
   const [punches, setPunches] = useState([]);
+
+  const [labelUpdateStack, setLabelUpdateStack] = useState([]);
+  const lastLabelResolveTimeStamp = useRef();
+
+  // labels, mapped to the punchIn id associated with the label:
+  const [labels, setLabels] = useState({});
 
   // when a new user loads, make sure to get the user's current
   // punch status
@@ -38,6 +44,16 @@ export default function Home() {
       const punches = await listPunchesResponse.json();
 
       setPunches(punches);
+
+      // also set the labels state:
+      punches.forEach((punch) => {
+        if (punch.mode === "in") {
+          labels[punch._id] = punch.label;
+        }
+      });
+
+      // call for rerender:
+      setLabels({ ...labels });
     }
 
     fetchAndSetPunches();
@@ -100,6 +116,44 @@ export default function Home() {
       toast("Server Error when trying to delete punches");
     }
   }
+
+  // resolves such that each label is updated once per id, and
+  // all other update requests per label id are discarded on the backend
+  async function resolveLabelUpdates() {
+    // NOTE: only labels attached to a punch of mode 'in' will be displayed
+    // in the user interface
+
+    const body = JSON.stringify({ stack: labelUpdateStack });
+
+    let labelUpdateResponse = await fetch("/api/punch/resolve-labels", {
+      method: "POST",
+      body,
+    });
+
+    if (labelUpdateResponse.ok) {
+      // clear the update stack:
+      setLabelUpdateStack([]);
+    }
+  }
+
+  async function attemptLabelResolve() {
+    // this function waits for several seconds, and then
+    // runs resolveLabelUpdates if there hasn't been an
+    // update during that wait time
+    lastLabelResolveTimeStamp.current = Date.now();
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    // check to see when the last update was:
+    if (
+      lastLabelResolveTimeStamp.current &&
+      Date.now() - lastLabelResolveTimeStamp.current >= 3000
+    ) {
+      lastLabelResolveTimeStamp.current = undefined;
+      resolveLabelUpdates();
+    }
+  }
+
+  useEffect(() => attemptLabelResolve(), [labelUpdateStack]);
 
   if (isLoading) return <div>Loading........ :&#41;</div>;
 
@@ -177,9 +231,18 @@ export default function Home() {
                       </div>
                       <div className="inline-block">
                         <input
-                          className="mx-6 p-1"
+                          className="mx-6 py-1 px-3"
                           type="text"
-                          placeholder="label: not yet implemented!"
+                          value={labels[punchIn._id] || ""}
+                          onChange={(e) => {
+                            setLabelUpdateStack([
+                              { punchInId: punchIn._id, value: e.target.value },
+                              ...labelUpdateStack,
+                            ]);
+                            labels[punchIn._id] = e.target.value;
+                            setLabels({ ...labels }); // to trigger rerender
+                          }}
+                          placeholder="add a label!"
                         />
                       </div>
                       <div
