@@ -19,6 +19,9 @@ export default function Home() {
   const [labelUpdateStack, setLabelUpdateStack] = useState([]);
   const lastLabelResolveTimeStamp = useRef();
 
+  const [showDeleteAllConfirmation, setShowDeleteAllConfirmation] =
+    useState(false);
+
   // labels, mapped to the punchIn id associated with the label:
   const [labels, setLabels] = useState({});
 
@@ -233,6 +236,27 @@ export default function Home() {
     document.body.removeChild(link);
   }
 
+  async function deleteAllPunches() {
+    if (punchMode === "out") {
+      toast("Please Punch Out before deleting");
+      setShowDeleteAllConfirmation(false);
+      return;
+    }
+
+    let deleteAllResponse = await fetch("/api/punch/delete-all", {
+      method: "DELETE",
+      body: JSON.stringify({ email: user.email }),
+    });
+
+    if (deleteAllPunches.ok) {
+      toast("successfully clocked out!");
+    }
+
+    // update ui:
+    setShowDeleteAllConfirmation(false);
+    setPunches([]);
+  }
+
   if (isLoading) return <div>Loading........ :&#41;</div>;
 
   return (
@@ -272,13 +296,39 @@ export default function Home() {
             </div>
 
             {/* CSV EXPORT ALL */}
-            <div className="text-right">
+            <div>
               <span
                 onClick={() => createAndDownloadCSV()}
-                className="text-green-600 cursor-pointer"
+                className="text-green-600 cursor-pointer text-left"
               >
                 export as csv
               </span>
+
+              {showDeleteAllConfirmation && (
+                <div className="text-right">
+                  <span>you sure???</span>
+                  <span
+                    onClick={() => deleteAllPunches()}
+                    className="text-red-500 mx-6 cursor-pointer"
+                  >
+                    yes
+                  </span>
+                  <span
+                    onClick={() => setShowDeleteAllConfirmation(false)}
+                    className="text-blue-600 mx-6 cursor-pointer"
+                  >
+                    no
+                  </span>
+                </div>
+              )}
+
+              <div className="text-right cursor-pointer text-red-500">
+                {!showDeleteAllConfirmation && (
+                  <span onClick={() => setShowDeleteAllConfirmation(true)}>
+                    delete all entries
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* LIST PUNCH INFO */}
