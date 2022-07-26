@@ -155,6 +155,84 @@ export default function Home() {
 
   useEffect(() => attemptLabelResolve(), [labelUpdateStack]);
 
+  function createAndDownloadCSV() {
+    // first, create a matrix of relevant punch data:
+
+    const matrix = [
+      [
+        "Time Elapsed",
+        "Label",
+        "Punch In Time",
+        "Punch Out Time",
+        "Punch In Date",
+        "Punch Out Date",
+      ],
+    ];
+
+    // populate the matrix:
+    punches.forEach((punchOut, index) => {
+      if (punchOut.mode === "out" && index + 1 < punches.length) {
+        const punchIn = punches[index + 1];
+
+        const elapsed = punchOut.time - punchIn.time;
+        const label = punchIn.label;
+
+        const inTime = new Date(punchIn.time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const outTime = new Date(punchOut.time).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const inDate = new Date(punchIn.time).toLocaleDateString();
+        const outDate = new Date(punchOut.time).toLocaleDateString();
+
+        matrix.push([elapsed, label, inTime, outTime, inDate, outDate]);
+      }
+    });
+
+    // create the csv file:
+    const content =
+      "data:text/csv;charset=utf-8," +
+      matrix.map((row) => row.join()).join("\r\n");
+
+    const encodedURI = encodeURI(content);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedURI);
+
+    // get the earliest punch out and the latest punch out
+    // (so we can name the csv document appropriately)
+    let earliestPunchTime;
+    let latestPunchTime;
+
+    punches.forEach((punch) => {
+      if (punch.mode === "out") {
+        if (punch.time < earliestPunchTime || !earliestPunchTime) {
+          earliestPunchTime = punch.time;
+        }
+
+        if (punch.time > latestPunchTime || !latestPunchTime) {
+          latestPunchTime = punch.time;
+        }
+      }
+    });
+
+    // set the name of file:
+    link.setAttribute(
+      "download",
+      `${new Date(earliestPunchTime).toLocaleDateString()}_to_${new Date(
+        latestPunchTime
+      ).toLocaleDateString()}`
+    );
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   if (isLoading) return <div>Loading........ :&#41;</div>;
 
   return (
@@ -193,6 +271,17 @@ export default function Home() {
               <StopWatch since={punchInTime} />
             </div>
 
+            {/* CSV EXPORT ALL */}
+            <div className="text-right">
+              <span
+                onClick={() => createAndDownloadCSV()}
+                className="text-green-600 cursor-pointer"
+              >
+                export as csv
+              </span>
+            </div>
+
+            {/* LIST PUNCH INFO */}
             <div className="my-2">
               {punches.map((punch, index) => {
                 if (punch.mode === "out" && index + 1 < punches.length) {
