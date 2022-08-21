@@ -365,12 +365,12 @@ export default function Home() {
                       key={`${punchOut._id}_${punchIn._id}`}
                       className="my-10"
                     >
-                      <div className="pr-1 inline-block mx-1 w-[100px] text-xl">
+                      <div className="pr-1 block mx-1 min-w-[200px] text-xl">
                         {prettifyMs(elapsed)}
                       </div>
                       <div className="inline-block">
                         <input
-                          className="mx-6 py-1 px-3"
+                          className="py-1 px-3"
                           type="text"
                           value={labels[punchIn._id] || ""}
                           onChange={(e) => {
