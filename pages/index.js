@@ -299,7 +299,7 @@ export default function Home() {
             <div>
               <span
                 onClick={() => createAndDownloadCSV()}
-                className="text-green-600 cursor-pointer text-left"
+                className="text-green-600 cursor-pointer select-none text-left"
               >
                 export as csv
               </span>
@@ -309,20 +309,20 @@ export default function Home() {
                   <span>you sure???</span>
                   <span
                     onClick={() => deleteAllPunches()}
-                    className="text-red-500 mx-6 cursor-pointer"
+                    className="text-red-500 mx-6 cursor-pointer select-none"
                   >
                     yes
                   </span>
                   <span
                     onClick={() => setShowDeleteAllConfirmation(false)}
-                    className="text-blue-600 mx-6 cursor-pointer"
+                    className="text-blue-600 mx-6 cursor-pointer select-none"
                   >
                     no
                   </span>
                 </div>
               )}
 
-              <div className="text-right cursor-pointer text-red-500">
+              <div className="text-right cursor-pointer select-none text-red-500">
                 {!showDeleteAllConfirmation && (
                   <span onClick={() => setShowDeleteAllConfirmation(true)}>
                     delete all entries
@@ -386,7 +386,7 @@ export default function Home() {
                       </div>
                       <div
                         onClick={() => removePunches(punchOut._id, punchIn._id)}
-                        className="float-right cursor-pointer mx-2 inline-block text-red-500"
+                        className="float-right cursor-pointer select-none mx-2 inline-block text-red-500"
                       >
                         x
                       </div>
