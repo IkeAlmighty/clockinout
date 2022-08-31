@@ -408,8 +408,8 @@ export default function Home() {
           </div>
         ) : (
           <div>
-            Hey man, you gotta login to use this app. Click that button up there
-            ^
+            This app requires you to login via Auth0. Click the "Login" button
+            above.
           </div>
         )}
       </div>
