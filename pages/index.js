@@ -409,7 +409,9 @@ export default function Home() {
         ) : (
           <div>
             This app requires you to login via Auth0. Click the "Login" button
-            above.
+            above, and use the following credentials to test the app out:
+            <h3>username: test@ikecraft.net</h3>
+            <h3>password: test!!1234</h3>
           </div>
         )}
       </div>
